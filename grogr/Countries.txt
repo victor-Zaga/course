@@ -1,0 +1,5 @@
+Russia;Eurasia;17.1;146.1;Moscow;
+China;Asia;9.6;1410;Beijing;
+India;Asia;3.3;1500;New Delhi;
+Brazil;South America;8.5;211;Brazil;
+Japan;Asia;0.377;126;Tokyo;

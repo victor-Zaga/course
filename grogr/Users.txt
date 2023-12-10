@@ -1,1 +1,5 @@
-dima;123;1;
+john;12ngf3;0;
+alice;456;0;
+dima;bobr;1;
+pasha;123;1;
+nikita;admin;0;

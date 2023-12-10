@@ -1,5 +1,6 @@
-Russia;Eurasia;17.1;146.1;Moscow;
-China;Asia;9.6;1410;Beijing;
-India;Asia;3.3;1500;New Delhi;
-Brazil;South America;8.5;211;Brazil;
-Japan;Asia;0.377;126;Tokyo;
+Russia;Eurasia;17.10;146.10;Moscow;
+Japan;Asia;0.38;126.00;Tokyo;
+China;Asia;9.60;1410.00;Beijing;
+Brazil;South America;8.50;211.00;Brazil;
+qer;eqr;34.00;341.00;ef;
+India;Asia;3.30;1500.00;New Delhi;

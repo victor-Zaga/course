@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <sstream>
 #define MAX_LENTH 100
 using namespace std;
 
@@ -70,5 +71,24 @@ public:
 	bool operator ==(const country& con) const
 	{
 		return population == con.population;
+	}
+
+	string to_string() const
+	{
+		char separator = ';';
+
+		stringstream area_stream;
+		area_stream << fixed << setprecision(2) << this->get_area();
+		string area_str = area_stream.str();
+
+		std::stringstream population_stream;
+		population_stream << fixed << setprecision(2) << this->get_population();
+		string population_str = population_stream.str();
+
+		// формирование строки
+		string curr_country = this->get_name() + separator + this->get_continent() + separator + area_str +
+							  separator + population_str + separator + this->get_capital() + separator + "\n";
+
+		return curr_country;
 	}
 };

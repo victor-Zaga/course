@@ -45,12 +45,7 @@ public:
 		return -1;
 	}
 
-	virtual void show()
-	{
-		cout << "Базовый класс" << endl;
-		cout << login << endl;
-		cout << password;
-	}
+	virtual void show() {}
 };
 
 class User : public Customer
@@ -82,10 +77,47 @@ public:
 
 	void show() override
 	{
-		cout << "Вы пользователь" << endl;
-		cout << login << endl;
-		cout << password << endl;
-		cout << is_admin << endl;
+		string role = "User";
+		cout << "| "
+			<< std::setw(11) << std::left << this->get_login() << "| "
+			<< std::setw(16) << std::left << this->get_password() << "| "
+			<< std::setw(15) << std::left << role << "|  \n";
+		cout << "-----------------------------------------------------\n";
+	}
+
+	int get_role() const override
+	{
+		return is_admin;
+	}
+};
+
+class Admin : public Customer
+{
+private:
+	const int is_admin = 1;
+public:
+	Admin(const string& _login, const string& _password) : Customer(_login, _password) {}
+	Admin() : Customer() {}
+	~Admin() {}
+
+	string get_login() const { return login; }
+	string get_password() const { return password; }
+
+	/*string to_string() override
+	{
+		char separator = ';';
+		string curr_user = this->get_login() + separator + this->get_password() + separator + "ADMIN" + separator;
+		return curr_user;
+	}*/
+
+	void show() override
+	{
+		string role = "Admin";
+		cout << "| "
+			<< std::setw(11) << std::left << this->get_login() << "| "
+			<< std::setw(16) << std::left << this->get_password() << "| "
+			<< std::setw(15) << std::left << role << "|  \n";
+		cout << "-----------------------------------------------------\n";
 	}
 
 	int get_role() const override
@@ -98,19 +130,34 @@ template <typename T>
 class BinaryTree {
 private:
 	struct Node {
-		T data; //Customer* data;
+		T data; //Customer* data; // country* data
 		Node* left;
 		Node* right;
 		int index; // индекс элемента
 
 		Node(const T& value, int _index) : data(value), left(nullptr), right(nullptr), index(_index) {}
-		Node() : left(nullptr), right(nullptr), index(0) {}
+		Node() : data(nullptr), left(nullptr), right(nullptr), index(0) {}
 	};
 
 	Node* root;
 
 public:
 	BinaryTree() : root(nullptr) { }
+
+	// Конструктор копирования
+	BinaryTree(const BinaryTree& tree_to_copy) : root(nullptr) {
+		root = copy_Node(tree_to_copy.root);
+	}
+
+	// Оператор присваивания
+	BinaryTree& operator =(const BinaryTree& tree_to_save) {
+		if (this != &tree_to_save) //this - объект в который нужно присвоить, tree_to_save - который нужно присвоить
+		{
+			this->clear_tree(); // Очищаем текущее дерево
+			root = copy_Node(tree_to_save.root); // копирование дерева и возврат ногого root
+		}
+		return *this; // возврат ссылки на новое дерево
+	}
 
 	Node* get_root() const
 	{
@@ -177,15 +224,15 @@ public:
 		Print_Tree_For_Continent_In_Alfavit(root, your_continent, is_continent);
 		if (!is_continent)
 		{
-			cout << "Нет такого континента. \n\n";
+			cout << "Нет стран для заданного континента. \n";
 		}
 	}
 
 	// перебалансировка дерева по названию страны вывод стран уже в алфавитним порядке
-	void out_continent_countries_alfavit(BinaryTree<country> countryTree)
+	void out_continent_countries_alfavit(BinaryTree<country*> countryTree)
 	{
-		BinaryTree<country> new_tree = countryTree.Balance_By_Name();
-		new_tree.Print_Tree_For_Continent();
+		BinaryTree<country*> new_tree = countryTree.Balance_By_Name(); // дерево new_tree в алфавитном порядке по обходу pre-order
+		new_tree.Print_Tree_For_Continent(); // тут тоже обход pre-order поэтому в порядке возрастания по алфавиту
 	}
 
 	//удаление элемента
@@ -210,7 +257,7 @@ public:
 	//балансировка дерева по названию страны, возвращает отбалансированное дерево 
 	BinaryTree Balance_By_Name()
 	{
-		BinaryTree<country> New_country_tree; // по ссылке 
+		BinaryTree<country*> New_country_tree; // по ссылке 
 		Balance_by_name_of_country(root, New_country_tree);
 		return New_country_tree;
 	}
@@ -229,7 +276,7 @@ public:
 		Search_By_Area_Range(root, min_area, max_area, count, search_arr);
 		if (search_arr == nullptr)
 		{
-			cout << "\nНет стран с заданным диапазоном площади.";
+			cout << "\nНет стран с заданным диапазоном площади.\n";
 		}
 		else
 		{
@@ -241,17 +288,12 @@ public:
 			for (int i = 0; i < count; i++)
 			{
 				cout << "| " << search_arr[i].index << " ";
-				search_arr[i].data.show();
+				search_arr[i].data->show();
 			}
 
 			delete[] search_arr; // освобождение памями массива нод
 		}
 	}
-
-	//void create_country_tree()
-	//{
-	//	create_tree_of_countries(root);
-	//}
 
 	double input_double(double value)
 	{
@@ -356,6 +398,18 @@ public:
 		add_customer_rec(root);
 	}
 
+	void print_customers()
+	{
+		print_customers_rec(root);
+	}
+
+
+	// Метод для очистки дерева
+	void clear_tree() {
+		clear(root);
+		root = nullptr;
+	}
+
 private:
 
 	// проверка пользователя для входа 
@@ -449,7 +503,6 @@ private:
 		{
 			if (is_root)
 			{
-				rebalanceIndexesPreOrder();
 				cout << "\nСтраны по возрастанию численности населения: " << endl;
 				cout << "-------------------------------------------------------------------------------------------\n";
 				cout << "| " << "№" << " |  " << "Название" << "  |    " << "Континент" << "    | "
@@ -458,14 +511,14 @@ private:
 			}
 			printTreePopulation(root->left, false);
 			cout << "| " << root->index << " ";
-			root->data.show();
+			root->data->show();
 			printTreePopulation(root->right, false);
 		}
 	}
 
 	// печать дерева для задданого континента
 	void Print_Tree_For_Continent_In_Alfavit(Node* root, string your_continent, int& flag, bool is_root = true)
-	{
+	{ 
 		if (root != nullptr)
 		{
 			if (is_root)
@@ -476,11 +529,11 @@ private:
 				cout << "-------------------------------------------------------------------------------------------\n";
 			}
 			Print_Tree_For_Continent_In_Alfavit(root->left, your_continent, flag, false);
-			if (root->data.get_continent() == your_continent)
+			if (root->data->get_continent() == your_continent)
 			{
 				flag = 1;
 				cout << "| " << root->index << " ";
-				root->data.show();
+				root->data->show();
 			}
 			Print_Tree_For_Continent_In_Alfavit(root->right, your_continent, flag, false);
 		}
@@ -543,43 +596,6 @@ private:
 		return root;
 	}
 
-	//// формирование дерева с клавиатуры 
-	//void create_tree_of_countries(Node*& root)
-	//{
-	//	cout << "Введите количество стран: " << endl;
-	//	int size = 0;
-	//	size = input_countries(size);
-	//	cin.ignore(); // пропуск \n после считывания числа 
-	//	for (int i = 0; i < size; i++)
-	//	{
-	//		cout << "\nВведите название страны: " << endl;
-	//		string your_name;
-	//		getline(cin, your_name);
-
-	//		cout << "Введите континент страны: " << endl;
-	//		string your_continent;
-	//		getline(cin, your_continent);
-
-	//		cout << "Введите площадь страны: " << endl;
-	//		double your_area = 0;
-	//		your_area = input_area_population(your_area);
-
-	//		cout << "Введите количество населения страны: " << endl;
-	//		double your_population = 0;
-	//		your_population = input_area_population(your_population);
-
-	//		cin.ignore();
-	//		cout << "Введите название столицы страны: " << endl;
-	//		string your_capital;
-	//		getline(cin, your_capital);
-
-	//		T temp(your_name, your_continent, your_area, your_population, your_capital);
-
-	//		cout << endl;
-	//		insert(temp);
-	//	}
-	//}
-
 	// добавление страны в дерево стран 
 	void add_country_rec(Node*& root)
 	{
@@ -605,28 +621,48 @@ private:
 		string your_capital;
 		getline(cin, your_capital);
 
-		T temp(your_name, your_continent, your_area, your_population, your_capital);
+		country* temp_county = new country(your_name, your_continent, your_area, your_population, your_capital);
+		insert_with_ptr(temp_county);
 
-		insert(temp);
+		temp_county = nullptr;
+		delete temp_county;
 	}
 
 	
 	void add_customer_rec(Node*& root)
 	{
-		// if () главный админ и добавление админа if ()
-		cin.ignore();
-		cout << "\nВведите логин пользователя: " << endl;
-		string your_login;
-		getline(cin, your_login);
+		cout << "\nДобавить пользователя (1) или администратора (2): ";
+		int choice = 0;
+		choice = input_int(choice);
+		Customer* new_customer = nullptr;
+		if (choice == 1)
+		{
+			cin.ignore();
+			cout << "\nВведите логин пользователя: " << endl;
+			string your_login;
+			getline(cin, your_login);
 
-		cout << "Введите пароль пользователя: " << endl;
-		string your_pass;
-		getline(cin, your_pass);
+			cout << "Введите пароль пользователя: " << endl;
+			string your_pass;
+			getline(cin, your_pass);
 
-		//Customer* guest;
-		T guest = new User(your_login, your_pass);
+			new_customer = new User(your_login, your_pass);
+		}
+		else if (choice == 2)
+		{
+			cin.ignore();
+			cout << "\nВведите логин администратора: " << endl;
+			string your_login;
+			getline(cin, your_login);
 
-		insert_with_ptr(guest);
+			cout << "Введите пароль администратора: " << endl;
+			string your_pass;
+			getline(cin, your_pass);
+
+			new_customer = new Admin(your_login, your_pass);
+		}
+
+		insert_with_ptr(new_customer);
 	}
 
 	// ПЕРЕБАЛАНСИРОВКА ДЕРЕВА ПО НАЗВАНИЮ СТРАНЫ 
@@ -638,8 +674,10 @@ private:
 
 			// Создаем новый элемент, используя новый ключ (например, name)
 			// и вставляем его в новое дерево
-			country temp_tree_elem(root->data.get_name(), root->data.get_continent(), root->data.get_area(), root->data.get_population(), root->data.get_capital());
+			country* temp_tree_elem = new country(root->data->get_name(), root->data->get_continent(), root->data->get_area(), root->data->get_population(), root->data->get_capital());
 			New_countryTree.insert_for_balance(temp_tree_elem);
+			temp_tree_elem = nullptr;
+			delete temp_tree_elem;
 
 			Balance_by_name_of_country(root->right, New_countryTree);
 		}
@@ -647,7 +685,7 @@ private:
 
 	void insert_Recursive_for_balance(Node* root, const T& value, int index)
 	{
-		if (value.get_name() < root->data.get_name())
+		if (value->get_name() < root->data->get_name())  //if (*(value) < *(root->data))
 		{
 			if (root->left == nullptr)
 			{
@@ -676,10 +714,13 @@ private:
 			return; // дерево пусто
 		}
 
+		// рекурсивно ищем в левом поддереве
+		Search_By_Area_Range(root->left, min_area, max_area, count, search_arr);
+
 		// Проверяем, находится ли текущий узел в заданном диапазоне площади
-		if (root->data.get_area() >= min_area && root->data.get_area() <= max_area)
+		if (root->data->get_area() >= min_area && root->data->get_area() <= max_area)
 		{
-			Node* temp = new Node[count + 1]; //массив из ноды
+			Node* temp = new Node[count + 1]; //массив из нод
 			for (int i = 0; i < count; ++i) {
 				temp[i] = search_arr[i];
 			}
@@ -691,8 +732,6 @@ private:
 			++count;
 		}
 
-		// рекурсивно ищем в левом поддереве
-		Search_By_Area_Range(root->left, min_area, max_area, count, search_arr);
 		// рекурсивно ищем в правом поддереве
 		Search_By_Area_Range(root->right, min_area, max_area, count, search_arr);
 	}
@@ -729,19 +768,6 @@ private:
 		}
 	}
 
-	// рекурсивный обход дерева и запись пользователей в файл
-	//void write_customers_to_file_recursive(Node* root, ofstream& file)
-	//{
-	//	if (root != nullptr)
-	//	{
-	//		// Записываем данные о пользователе в файл
-	//		file << (*(root->data)).get_login() << ";" << (*(root->data)).get_password() << ";"
-	//			<< (*(root->data)).get_role() << ";\n";
-	//		write_customers_to_file_recursive(root->left, file);
-	//		write_customers_to_file_recursive(root->right, file);
-	//	}
-	//}
-
 	void write_customers_to_file_recursive(Node* root, ofstream& file)
 	{
 		if (root != nullptr)
@@ -754,5 +780,48 @@ private:
 			write_customers_to_file_recursive(root->right, file);
 		}
 	}
+
+	// прайват метод для очистки памяти под дерево
+	void clear(Node* node) 
+	{
+		if (node != nullptr) {
+			clear(node->left);
+			clear(node->right);
+			delete node;
+		}
+	}
+
+	// приватный метод для рекурсивного копирования узлов
+	Node* copy_Node(const Node* root_tree_to_copy)
+	{
+		if (root_tree_to_copy == nullptr)
+			return nullptr;
+
+		Node* new_root = new Node(root_tree_to_copy->data, root_tree_to_copy->index);
+		new_root->left = copy_Node(root_tree_to_copy->left);
+		new_root->right = copy_Node(root_tree_to_copy->right);
+
+		return new_root;
+	}
+
+	void print_customers_rec(Node* root, bool is_root = true)
+	{
+		if (root != nullptr)
+		{
+			if (is_root)
+			{
+				cout << "\nСписок пользователей: " << endl;
+				cout << "-----------------------------------------------------\n";
+				cout << "| " << "№" << " |   " << "Логин" << "    |     " << "Пароль" << "      |     "
+					<< "Статус" << "     | " << "\n";
+				cout << "-----------------------------------------------------\n";
+			}
+			print_customers_rec(root->left, false);
+			cout << "| " << root->index << " ";
+			root->data->show();
+			print_customers_rec(root->right, false);
+		}
+	}
+
 };
 

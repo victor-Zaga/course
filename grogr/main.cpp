@@ -1,7 +1,7 @@
 #include "country.cpp"
 #include "tree.cpp"
 #include <fstream>
-#include <sstream>
+#include <type_traits>	
 
 int input_int(int& value)
 {
@@ -20,40 +20,6 @@ int input_int(int& value)
 	}
 	return value;
 }
-
-class Admin : public Customer
-{
-private:
-	const int is_admin = 1;
-public:
-	Admin(const string& _login, const string& _password) : Customer(_login, _password) {}
-	Admin() : Customer() {}
-	~Admin() {}
-
-	string get_login() const { return login; }
-	string get_password() const { return password; }
-
-	/*string to_string() override
-	{
-		char separator = ';';
-		string curr_user = this->get_login() + separator + this->get_password() + separator + "ADMIN" + separator;
-		return curr_user;
-	}*/
-
-	void show() override
-	{
-		cout << "Вы администратор!!" << endl;
-		cout << login << endl;
-		cout << password << endl;
-		cout << is_admin << endl;
-	}
-
-	int get_role() const override
-	{
-		return is_admin;
-	}
-};
-
 
 class file_database
 {
@@ -110,9 +76,9 @@ public:
 		return temp_tree;
 	}
 
-	BinaryTree<country> read_countries_from_file()
+	BinaryTree<country*> read_countries_from_file()
 	{
-		BinaryTree<country> temp_tree;
+		BinaryTree<country*> temp_tree;
 		ifstream file(countries_file);  // создание объекта для чтен0ия из файла
 
 		if (file.is_open())
@@ -135,54 +101,46 @@ public:
 				ss.ignore();
 				getline(ss, capital, ';');
 
-				country temp_country = country(name, continent, area, population, capital);
-				temp_tree.insert(temp_country);
-				//temp_country = nullptr;
-				//delete temp_country;
+				country* temp_country = new country(name, continent, area, population, capital);
+				temp_tree.insert_with_ptr(temp_country);
+				temp_country = nullptr;
+				delete temp_country;
 			}
 
 			file.close();
+			temp_tree.rebalanceIndexesPreOrder(); // ставим индексы в порядке pre-order
 		}
 		else
 		{
 			cout << "Ошибка при открытия файла." << countries_file << endl;
-			temp_tree = BinaryTree<country>();
+			temp_tree = BinaryTree<country*>();
 			return temp_tree; // сделать try catch
 		}
 		return temp_tree;
 	}
-
-	//void write_customers_to_file(BinaryTree<Customer*> customer_tree)
-	//{
-	//	ofstream file(customers_file); // создание объекта для записи в файо
-
-	//	if (file.is_open())
-	//	{
-	//		customer_tree.write_customers_to_file_rec(file);
-	//	}
-	//	else
-	//	{
-	//		cout << "Ошибка при открытия файла." << customers_file << endl;
-	//	}
-	//}
 	
 	template <typename T>
 	void write_customers_to_file(BinaryTree<T>& tree) // T - *Customer
 	{
 		string file_name;
-		if (is_same<T, Customer>::value)
+		// создает псевдоним BaseType для Customer, либо country
+		using BaseType = typename remove_pointer<T>::type; // remove_pointer - это шаблонный класс из <type_traits>, который принимает тип указателя и определяет тип объекта, на который указывает этот указатель.
+
+		if (is_same<BaseType, Customer>::value)  // is_same - это шаблонный класс из <type_traits>, который предоставляет статическую константу value, равную true, если его два аргумента имеют одинаковый тип, и false в противном случае.
 		{
 			file_name = customers_file;
 		}
-		else if (is_same<T, country>::value)
+		else if (is_same<BaseType, country>::value) 
 		{
 			file_name = countries_file;
 		}
+		
 		ofstream file(file_name); // создание объекта для записи в файл
 
 		if (file.is_open())
 		{
 			tree.write_data_to_file_(file);
+			file.close();
 		}
 		else
 		{
@@ -194,14 +152,10 @@ public:
 
 ofstream& operator <<(ofstream& country_file, const country& obj) 
 {
-	country_file << obj.get_name();
-	country_file << obj.get_continent();
-	country_file << obj.get_area();
-	country_file << obj.get_population();
-	country_file << obj.get_capital();
+	country_file << obj.to_string();
 	return country_file;
 }
-
+	
 ofstream& operator <<(ofstream& customer_file, const Customer& obj)
 {
 	customer_file << obj.get_login() << ";" << obj.get_password() << ";" << obj.get_role() << ";\n";
@@ -211,10 +165,10 @@ ofstream& operator <<(ofstream& customer_file, const Customer& obj)
 class User_interface
 {
 protected:
-	BinaryTree<country> country_tree;
+	BinaryTree<country*> country_tree;
 	file_database database;
 public:
-	User_interface(BinaryTree<country> _country_tree, file_database _database) : country_tree(_country_tree), database(_database) {}
+	User_interface(BinaryTree<country*> _country_tree, file_database _database) : country_tree(_country_tree), database(_database) {}
 	~User_interface() {}
 	void Print_tree_population()
 	{
@@ -276,7 +230,7 @@ private:
 	BinaryTree<Customer*> customer_tree;
 	
 public:
-	Admin_interface(BinaryTree<country> _country_tree, BinaryTree<Customer*> _customer_tree, file_database _database) : User_interface(_country_tree, _database)
+	Admin_interface(BinaryTree<country*> _country_tree, BinaryTree<Customer*> _customer_tree, file_database _database) : User_interface(_country_tree, _database)
 	{
 		customer_tree = _customer_tree;
 	}
@@ -294,46 +248,65 @@ public:
 
 	void admin_screen()
 	{
+		BinaryTree<country*> original_country_tree;
+		BinaryTree<Customer*> original_customer_tree;
+		BinaryTree<country*> last_saved_country_tree;
+		BinaryTree<Customer*> last_saved_customer_tree;
+
+		BinaryTree<country*> country_tree_to_view;
+		BinaryTree<Customer*> customer_tree_to_view;
+
+		original_country_tree = country_tree;
+		original_customer_tree = customer_tree;
+
+		bool check_chenges = false;
+		bool is_save = false;
+		bool is_becup = false;
 		while (true)
 		{
-			show_menu();
+			show_menu(); // 1 2 3 
 			cout << "4. Вставка новой страны." << endl;	
 			cout << "5. Вставка нового пользователя. " << endl;
-			cout << "6. Удаление заданной страны." << endl;
-			cout << "7. Удаление заданного пользователя." << endl;
-			cout << "8. Редактирование заданной страны." << endl;
-			cout << "9. Редактирование заданного пользователя." << endl;
-			cout << "10. Сохранение изменений в файл" << endl;
-			cout << "11. Отмена изменений" << endl;
+			cout << "6. Вывод пользователей." << endl;
+			cout << "7. Удаление заданной страны." << endl;
+			cout << "8. Удаление заданного пользователя." << endl;
+			cout << "9. Редактирование заданной страны." << endl;
+			cout << "10. Редактирование заданного пользователя." << endl;
+			cout << "11. Сохранение изменений в файл" << endl;
+			cout << "12. Отмена изменений" << endl;
 			cout << "0. Выход." << endl;
 			cout << "Сделайте выбор: ";
 			int choice = input_int(choice);
 			switch (choice)
 			{
 			case 1:
-				country_tree = database.read_countries_from_file();
-				Print_tree_population();
+				country_tree_to_view = database.read_countries_from_file();
+				country_tree_to_view.printTreePopulationUp();
 				break;
 			case 2:
-				country_tree = database.read_countries_from_file();
-				Print_countries_for_continent();
+				country_tree_to_view = database.read_countries_from_file();
+				country_tree_to_view.out_continent_countries_alfavit(country_tree_to_view);
 				break;
 			case 3:
-				country_tree = database.read_countries_from_file();
-				search_for_interval();
+				/*country_tree = database.read_countries_from_file();
+				search_for_interval();*/
+				country_tree_to_view = database.read_countries_from_file();
+				country_tree_to_view.search();
 				break;
 			case 4:
-				country_tree = database.read_countries_from_file();
+				// считывание
 				add_country();
-				// добавить в файл изменения 
+				is_becup = false;
 				break;
-			
 			case 5:
-				customer_tree = database.read_customers_from_file();
 				add_customer();
+				is_becup = false;
 				break;
 
 			case 6:
+				customer_tree_to_view = database.read_customers_from_file();
+				customer_tree_to_view.print_customers();
+				//customer_tree.print_customers();
 				break;
 
 			case 7:
@@ -344,7 +317,42 @@ public:
 			case 9:
 				break;
 			case 10:
+				break;
+
+			case 11:
+				// сохренение изменений в файл
 				database.write_customers_to_file(country_tree);
+				database.write_customers_to_file(customer_tree);
+				// сохранение изменений между сохранениями
+				if (is_save)
+				{
+					original_country_tree = last_saved_country_tree;
+					original_customer_tree = last_saved_customer_tree;
+				}
+				last_saved_country_tree = country_tree; // запоминаем апдейт дерево для бекапа
+				last_saved_customer_tree = customer_tree;
+				cout << "\nИзмененния были записаны в файл." << endl;
+				is_save = true;
+				is_becup = false;
+				break;
+
+			case 12:
+				// отмена изменений
+				if (is_save && !is_becup)  // после 10 пункта будет Изменения были отменены
+				{ // на 2 раза подряд
+					country_tree = original_country_tree;
+					customer_tree = original_customer_tree;
+					database.write_customers_to_file(country_tree);
+					database.write_customers_to_file(customer_tree);
+					cout << "\nИзменения были отменены." << endl;
+					last_saved_country_tree = country_tree; // изменяем последнее запомненное измененное дерево до текущего, тк отменили изменения 
+					last_saved_customer_tree = customer_tree;
+					is_becup = true;
+				}
+				else
+				{
+					cout << "\nИзменения еще не были внесены." << endl;
+				}
 				break;
 
 			case 0:
@@ -356,7 +364,7 @@ public:
 				break;
 			}
 
-		}
+		} 
 	}
 };
 
@@ -373,7 +381,7 @@ public:
 	~MENU() {}
 	void menu()
 	{
-		BinaryTree<country> country_tree; // создание дерева стран
+		BinaryTree<country*> country_tree; // создание дерева стран
 		BinaryTree<Customer*> customer_tree; // дерева пользователей
 		string customers_file = "Users.txt";
 		string countries_file = "Countries.txt";
@@ -392,6 +400,7 @@ public:
 			if (choice == 1)
 			{
 				customer_tree = database.read_customers_from_file();
+				country_tree = database.read_countries_from_file();
 				cout << "\nВведите логин: " << endl;
 				cin.ignore();
 				getline(cin, login);

@@ -1,7 +1,7 @@
 #include "country.cpp"
 #include "tree.cpp"
 #include <fstream>
-#include <type_traits>	
+#include <type_traits>
 
 int input_int(int& value)
 {
@@ -68,6 +68,7 @@ public:
 			}
 
 			file.close();
+			temp_tree.rebalanceIndexesPreOrder();
 		}
 		else
 		{
@@ -120,7 +121,7 @@ public:
 	}
 	
 	template <typename T>
-	void write_customers_to_file(BinaryTree<T>& tree) // T - *Customer
+	void write_tree_to_file(BinaryTree<T>& tree) // T - *Customer
 	{
 		string file_name;
 		// создает псевдоним BaseType для Customer, либо country
@@ -234,16 +235,18 @@ public:
 	{
 		customer_tree = _customer_tree;
 	}
-	~Admin_interface() {}
+	~Admin_interface() { }
 
 	void add_country()
 	{
 		country_tree.add_country_();
+		country_tree.rebalanceIndexesPreOrder(); // перестановка индексов после добавдений
 	}
 
 	void add_customer()
 	{
 		customer_tree.add_customer_();
+		customer_tree.rebalanceIndexesPreOrder();
 	}
 
 	void admin_screen()
@@ -294,7 +297,6 @@ public:
 				country_tree_to_view.search();
 				break;
 			case 4:
-				// считывание
 				add_country();
 				is_becup = false;
 				break;
@@ -310,9 +312,11 @@ public:
 				break;
 
 			case 7:
+				country_tree.remove();
 				break;
 
 			case 8:
+				customer_tree.remove();
 				break;
 			case 9:
 				break;
@@ -321,15 +325,15 @@ public:
 
 			case 11:
 				// сохренение изменений в файл
-				database.write_customers_to_file(country_tree);
-				database.write_customers_to_file(customer_tree);
+				database.write_tree_to_file(country_tree);
+				database.write_tree_to_file(customer_tree);
 				// сохранение изменений между сохранениями
 				if (is_save)
 				{
 					original_country_tree = last_saved_country_tree;
 					original_customer_tree = last_saved_customer_tree;
 				}
-				last_saved_country_tree = country_tree; // запоминаем апдейт дерево для бекапа
+				last_saved_country_tree = country_tree; // запоминаем апдейт деревья для бекапа
 				last_saved_customer_tree = customer_tree;
 				cout << "\nИзмененния были записаны в файл." << endl;
 				is_save = true;
@@ -342,10 +346,10 @@ public:
 				{ // на 2 раза подряд
 					country_tree = original_country_tree;
 					customer_tree = original_customer_tree;
-					database.write_customers_to_file(country_tree);
-					database.write_customers_to_file(customer_tree);
+					database.write_tree_to_file(country_tree);
+					database.write_tree_to_file(customer_tree);
 					cout << "\nИзменения были отменены." << endl;
-					last_saved_country_tree = country_tree; // изменяем последнее запомненное измененное дерево до текущего, тк отменили изменения 
+					last_saved_country_tree = country_tree; // уже не нужно запоминать измененные деревья, т.к. отменили изменения
 					last_saved_customer_tree = customer_tree;
 					is_becup = true;
 				}
@@ -356,6 +360,14 @@ public:
 				break;
 
 			case 0:
+				original_country_tree.clear_tree();
+				original_customer_tree.clear_tree();
+
+				last_saved_country_tree.clear_tree();
+				last_saved_customer_tree.clear_tree();
+
+				country_tree_to_view.clear_tree();
+				customer_tree_to_view.clear_tree();
 				cout << "\nПока" << endl;
 				return;
 
@@ -412,12 +424,12 @@ public:
 				if (guest == nullptr)
 				{
 					system("cls");
-					cout << "\nНет такого пользователя." << endl;
+					cout << "Нет такого пользователя." << endl;
 				}
 				else if (guest->get_role() == 0)
 				{
 					system("cls");
-					cout << "\nДобро пожаловать!!" << endl;
+					cout << "Добро пожаловать!!" << endl;
 
 					cout << "Ваш логин: " << login << endl;
 					cout << "Ваш пароль: " << password << endl;
@@ -428,7 +440,7 @@ public:
 				else if (guest->get_role() == 1)
 				{
 					system("cls");
-					cout << "\nДобро пожаловать!!" << endl;
+					cout << "Добро пожаловать!!" << endl;
 					cout << "У вас есть права администратора" << endl;
 
 					cout << "Ваш логин: " << login << endl;
@@ -447,11 +459,18 @@ public:
 				cout << "Введите пароль: " << endl;
 				getline(cin, password);
 
+				while(customer_tree.is_same_logins(login))
+				{
+					cout << "\nПользователь с логином " << login << " уже существует" << endl;
+					cout << "Придумайте другой логин: " << endl;
+					getline(cin, login);
+				}
+
 				guest = new User(login, password);
 				customer_tree.insert_with_ptr(guest);
 
 				// запись дерева в файл
-				database.write_customers_to_file(customer_tree);
+				database.write_tree_to_file(customer_tree);
 
 				cout << "Вы успешно зарегистрированы!" << endl;
 			}
@@ -463,13 +482,14 @@ public:
 
 		guest = nullptr;
 		delete guest;
+		country_tree.clear_tree();
+		customer_tree.clear_tree();
 	}
 };
 
 int main()
 {
 	system("chcp 1251\n");
-	cout << "\n";
 	//BinaryTree<country> countryTree;
 	
 	//countryTree.create_country_tree();
@@ -519,3 +539,4 @@ int main()
 
 	return 0;
 }
+

@@ -39,13 +39,11 @@ public:
 		return login == customer.login;
 	}
 
-	//virtual string to_string() { return ""; }
-	virtual int get_role() const
-	{
-		return -1;
-	}
+	/*virtual string to_string() { return ""; }*/
 
 	virtual void show() {}
+
+	virtual int get_role() const { return -1; }
 };
 
 class User : public Customer
@@ -54,24 +52,20 @@ private:
 	const int is_admin = 0;
 
 public:
-	User(const string& _login, const string& _password) : Customer(_login, _password)
-	{
-		//login = _login;
-		//password = _password;
-	}
+	User(const string& _login, const string& _password) : Customer(_login, _password) 	{ }
 	User() : Customer() {}
 	~User() {}
 
-	string get_login() const { return login; }
-	string get_password() const { return password; }
+	//string get_login() const { return login; }
+	//string get_password() const { return password; }
 
-	void set_login(const string& _login) { login = _login; }
-	void set_password(const string& _password) { password = _password; }
+	//void set_login(const string& _login) { login = _login; }
+	//void set_password(const string& _password) { password = _password; }
 
-	//string to_string() override
+	//string to_string()
 	//{
 	//	char separator = ';';
-	//	string curr_user = this->get_login() + separator + this->get_password() + separator;
+	//	string curr_user = this->get_login() + separator + this->get_password() + separator + std::to_string(this->get_role()) + separator + "\n";
 	//	return curr_user;
 	//}
 
@@ -100,22 +94,25 @@ public:
 	Admin() : Customer() {}
 	~Admin() {}
 
-	string get_login() const { return login; }
+	/*string get_login() const { return login; }
 	string get_password() const { return password; }
 
-	/*string to_string() override
-	{
-		char separator = ';';
-		string curr_user = this->get_login() + separator + this->get_password() + separator + "ADMIN" + separator;
-		return curr_user;
-	}*/
+	void set_login(const string& _login) { login = _login; }
+	void set_password(const string& _password) { password = _password; }*/
+
+	//string to_string()
+	//{
+	//	char separator = ';';
+	//	string curr_user = this->get_login() + separator + this->get_password() + separator + std::to_string(this->get_role()) + separator + "\n";
+	//	return curr_user;
+	//}
 
 	void show() override
 	{
 		string role = "Admin";
 		cout << "| "
 			<< std::setw(11) << std::left << this->get_login() << "| "
-			<< std::setw(16) << std::left << this->get_password() << "| "
+			<< std::setw(16) << std::left << this->get_password() << "| "	
 			<< std::setw(15) << std::left << role << "|  \n";
 		cout << "-----------------------------------------------------\n";
 	}
@@ -159,22 +156,22 @@ public:
 		return *this; // возврат ссылки на новое дерево
 	}
 
-	Node* get_root() const
-	{
-		return root;
-	}
+	//Node* get_root() const
+	//{
+	//	return root;
+	//}
 
-	void insert(const T& value)
-	{
-		int count = count_tree_nodes(root) + 1;
-		if (root == nullptr)
-		{
-			root = new Node(value, count);
-		}
-		else {
-			insertRecursive(root, value, count);
-		}
-	}
+	//void insert(const T& value)
+	//{
+	//	int count = count_tree_nodes(root) + 1;
+	//	if (root == nullptr)
+	//	{
+	//		root = new Node(value, count);
+	//	}
+	//	else {
+	//		insertRecursive(root, value, count);
+	//	}
+	//}
 
 	void insert_with_ptr(const T& value)
 	{
@@ -201,10 +198,10 @@ public:
 	}
 
 	// как удобно
-	void printInOrder()
-	{
-		printInOrderRec(root);
-	}
+	//void printInOrder()
+	//{
+	//	printInOrderRec(root);
+	//}
 
 	void printTreePopulationUp()
 	{
@@ -238,19 +235,21 @@ public:
 	//удаление элемента
 	void remove()
 	{
-		cout << "Введите население страны, которую нужно удалить: " << endl;
-		double your_population = 0;
-		int flag = 0;
-		your_population = input_double(your_population);
-		root = delele_element(root, your_population, flag);
-		if (flag == 1)
+		cout << "\nВведите номер для удаления: ";
+		int index_to_delete = 0;
+		index_to_delete = input_int(index_to_delete);
+
+		Node* obj_to_delete = get_element_by_index(root, index_to_delete); // либо customer, либо country
+		
+		if (obj_to_delete != nullptr)
 		{
-			cout << "\nУдалена страна с населением: " << your_population << endl;
-			cout << std::endl;
+			root = delele_element(root, obj_to_delete);
+			cout << "Удаление прошло успешно." << endl;
+			rebalanceIndexesPreOrder(); // перебалансировка индексов от левого поддерева к правому после удаления элемента
 		}
 		else
 		{
-			cout << "Данного элемента нет в дереве\n" << endl;
+			cout << "Данного элемента нет в дереве." << endl;
 		}
 	}
 
@@ -368,16 +367,16 @@ public:
 	Customer* check_customer_to_login_in(Customer* guest)
 	{
 		Customer* check = check_customers_rec(root, *(guest));
-		return check;
+		return check; 
 	}
 
 	void write_data_to_file_(ofstream& file)
 	{
-		write_customers_to_file_recursive(root, file);
+		write_to_file_recursive(root, file);
 	}
 
 	// паблик метод для перебалансировки индексов в порядке pre-order (с левого поддерева вверх и потом правое поддерево)
-	void rebalanceIndexesPreOrder() {
+	void rebalanceIndexesPreOrder() { 
 		int current_index = 0;
 		rebalanceRecPreOrder(root, current_index);
 	}
@@ -403,14 +402,54 @@ public:
 		print_customers_rec(root);
 	}
 
-
 	// Метод для очистки дерева
 	void clear_tree() {
 		clear(root);
 		root = nullptr;
 	}
 
+	// проверка на одинковые логины в дереве
+	bool is_same_logins(const string& login) const
+	{
+		return is_same_logins_rec(root, login);
+	}
+
+
+	/*template <typename T>
+	bool BinaryTree<T>::contains(const T& value) const
+	{
+		return containsHelper(root, value);
+	}*/
+
+
 private:
+
+	//провкерка по индексу для удаления
+	Node* get_element_by_index(Node* root, const int target_index)
+	{
+		if (root == nullptr)
+		{
+			return nullptr;
+		}
+
+		// Обход в порядке возрастания in-order
+		Node* left_result = get_element_by_index(root->left, target_index);
+
+		// Проверка, достигли ли мы нужного индекса
+		if (root->index == target_index)
+		{
+			return root;
+		}
+
+		// Проверка, найден ли элемент в левом поддереве
+		if (left_result != nullptr)
+		{
+			return left_result;
+		}
+
+		// Поиск в правом поддереве
+		return get_element_by_index(root->right, target_index);
+	}
 
 	// проверка пользователя для входа 
 	Customer* check_customers_rec(Node* root, const Customer& guest)
@@ -434,29 +473,29 @@ private:
 		return right_result;
 	}
 
-	void insertRecursive(Node* root, const T& value, int index)
-	{
-		if (value < root->data) //country 
-		{
-			if (root->left == nullptr)
-			{
-				root->left = new Node(value, index);
-			}
-			else {
-				insertRecursive(root->left, value, index);
-			}
-		}
-		else
-		{
-			if (root->right == nullptr)
-			{
-				root->right = new Node(value, index);
-			}
-			else {
-				insertRecursive(root->right, value, index);
-			}
-		}
-	}
+	//void insertRecursive(Node* root, const T& value, int index)
+	//{
+	//	if (value < root->data) //country 
+	//	{
+	//		if (root->left == nullptr)
+	//		{
+	//			root->left = new Node(value, index);
+	//		}
+	//		else {
+	//			insertRecursive(root->left, value, index);
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (root->right == nullptr)
+	//		{
+	//			root->right = new Node(value, index);
+	//		}
+	//		else {
+	//			insertRecursive(root->right, value, index);
+	//		}
+	//	}
+	//}
 
 	// вставка элемента дерева через указатель
 	void insertRecursivePtr(Node* root, const T& value, int index)  //const Customer*& value, Customer*
@@ -483,18 +522,18 @@ private:
 		}
 	}
 
-	//печать дерева как удобно смотреть 
-	void printInOrderRec(Node* root)
-	{
-		if (root != nullptr)
-		{
-			cout << root->index;
-			cout << ". ";
-			(root->data).show(); // -> для укащателя , для страны будет.
-			printInOrderRec(root->left); // по другому сразу левое поддерево потом вывод а потом правое поддерево
-			printInOrderRec(root->right);
-		}
-	}
+	////печать дерева как удобно смотреть 
+	//void printInOrderRec(Node* root)
+	//{
+	//	if (root != nullptr)
+	//	{
+	//		cout << root->index;
+	//		cout << ". ";
+	//		(root->data).show(); // -> для укащателя , для страны будет.
+	//		printInOrderRec(root->left); // по другому сразу левое поддерево потом вывод а потом правое поддерево
+	//		printInOrderRec(root->right);
+	//	}
+	//}
 
 	// вывод дерева в порядке возрастания населений стран при балансороке по населению
 	void printTreePopulation(Node* root, bool is_root = true)
@@ -550,17 +589,16 @@ private:
 	}
 
 	// удаление элменета дерева по заданному населению страны
-	Node* delele_element(Node* root, double key_population, int& flag)
+	Node* delele_element(Node* root, Node* key_object)
 	{
 		if (root == NULL) {
 			return root;
 		}
-		if (root->data.get_population() == key_population)
+		if (root->index == key_object->index)
 		{ // удаляем элемент
 			if (root->left == nullptr && root->right == nullptr) // удалили корень, вернули nullptr
 			{
 				delete root; //у удаляемого нет потомков 
-				flag = 1;
 				return nullptr;
 			}
 			Node* temp; //хранения ссылки на новый корень поддерева после удаления текущего корня
@@ -568,31 +606,30 @@ private:
 			{
 				temp = root->left; //если нет правого потомка
 				delete root;
-				flag = 1;
 				return temp;
 			}
 			else if (root->left == NULL)
 			{
 				temp = root->right; //если нет левого потомка
 				delete root;
-				flag = 1;
 				return temp;
 			}
 			else //у удаляемого 2 потомка
 			{
 				Node* min = findMin(root->right);
-				root->data.set_name(min->data.get_name());
-				root->data.set_continent(min->data.get_continent());
-				root->data.set_area(min->data.get_area());
-				root->data.set_population(min->data.get_population());
-				root->data.set_capital(min->data.get_capital());
-				root->right = delele_element(root->right, min->data.get_population(), flag);
+				//root->data.set_name(min->data.get_name());
+				//root->data.set_continent(min->data.get_continent());
+				//root->data.set_area(min->data.get_area());
+				//root->data.set_population(min->data.get_population());
+				//root->data.set_capital(min->data.get_capital());
+				root->data = min->data; // root->data - либо customer, либо country  min->data - либо customer, либо country
+				root->right = delele_element(root->right, min);
 			}
 		}
-		else if (key_population < root->data.get_population())
-			root->left = delele_element(root->left, key_population, flag);
+		else if (*(key_object->data) < *(root->data))
+			root->left = delele_element(root->left, key_object);
 		else
-			root->right = delele_element(root->right, key_population, flag);
+			root->right = delele_element(root->right, key_object);
 		return root;
 	}
 
@@ -768,7 +805,7 @@ private:
 		}
 	}
 
-	void write_customers_to_file_recursive(Node* root, ofstream& file)
+	void write_to_file_recursive(Node* root, ofstream& file)
 	{
 		if (root != nullptr)
 		{
@@ -776,8 +813,8 @@ private:
 			/*file << (*(root->data)).get_login() << ";" << (*(root->data)).get_password() << ";"
 				<< (*(root->data)).get_role() << ";\n";*/
 			file << *(root->data); //*customer => customer
-			write_customers_to_file_recursive(root->left, file);
-			write_customers_to_file_recursive(root->right, file);
+			write_to_file_recursive(root->left, file);
+			write_to_file_recursive(root->right, file);
 		}
 	}
 
@@ -823,5 +860,25 @@ private:
 		}
 	}
 
-};
+	bool is_same_logins_rec(Node* root, const string& login) const
+	{
+		if (root == nullptr)
+		{
+			return false; // элемент не найден
+		}
 
+		if (root->data->get_login() == login)
+		{
+			return true; // элемент найден в текущем узле
+		}
+		else if (login < root->data->get_login())
+		{
+			return is_same_logins_rec(root->left, login);
+		}
+		else
+		{
+			return is_same_logins_rec(root->right, login);
+		}
+	}
+
+};

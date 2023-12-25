@@ -53,14 +53,14 @@ public:
 				
 				if (role == 0)
 				{
-					User* temp_user = new User(login, password);
+					User* temp_user = new User(login, password, 0);
 					temp_tree.insert_with_ptr(temp_user);
 					temp_user = nullptr; // дл€ корректной работв дерева
 					delete temp_user;
 				}
 				else if (role == 1)
 				{
-					Admin* temp_admin = new Admin(login, password);
+					Admin* temp_admin = new Admin(login, password, 1);
 					temp_tree.insert_with_ptr(temp_admin);
 					temp_admin = nullptr;
 					delete temp_admin;
@@ -238,7 +238,7 @@ public:
 	~Admin_interface() { }
 
 	void add_country()
-	{
+	{	
 		country_tree.add_country_();
 		country_tree.rebalanceIndexesPreOrder(); // перестановка индексов после добавдений
 	}
@@ -318,9 +318,13 @@ public:
 			case 8:
 				customer_tree.remove();
 				break;
+
 			case 9:
+				country_tree.changing_country_info();
 				break;
+
 			case 10:
+				customer_tree.changing_customer_info();
 				break;
 
 			case 11:
@@ -391,7 +395,7 @@ public:
 	//MENU(file_database _database, BinaryTree<Customer*>& _customer_tree, BinaryTree<country> _country_tree) : database(_database), customer_tree(_customer_tree), country_tree(_country_tree) {}
 	MENU() {}
 	~MENU() {}
-	void menu()
+	void main_menu()
 	{
 		BinaryTree<country*> country_tree; // создание дерева стран
 		BinaryTree<Customer*> customer_tree; // дерева пользователей
@@ -459,14 +463,16 @@ public:
 				cout << "¬ведите пароль: " << endl;
 				getline(cin, password);
 
-				while(customer_tree.is_same_logins(login))
+				guest = new User(login, password, 0);
+
+				while(customer_tree.is_same(guest))
 				{
 					cout << "\nѕользователь с логином " << login << " уже существует" << endl;
 					cout << "ѕридумайте другой логин: " << endl;
 					getline(cin, login);
+					guest->set_login(login);
 				}
 
-				guest = new User(login, password);
 				customer_tree.insert_with_ptr(guest);
 
 				// запись дерева в файл
@@ -535,7 +541,7 @@ int main()
 	//database.read_customers_from_file();
 
 	MENU ui;
-	ui.menu();
+	ui.main_menu();
 
 	return 0;
 }

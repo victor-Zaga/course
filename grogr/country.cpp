@@ -15,7 +15,7 @@ private:
 	double population;
 	string capital;
 public:
-	country(string _name, string _continent, double _area, double _population, string _capital)
+	country(string _name, string _continent, double _area, double _population, string _capital)	
 	{
 		name = _name;
 		continent = _continent;
@@ -41,7 +41,7 @@ public:
 	string get_capital() const { return capital; }
 
 	//сеттеры
-	void set_name(const string& new_name) { name = new_name; }
+	void set_name(const string& new_name) { this->name = new_name; }
 	void set_continent(const string& new_continent) { continent = new_continent; }
 	void set_area(const double new_area) { area = new_area; }
 	void set_population(double new_population) { population = new_population; }
@@ -70,7 +70,8 @@ public:
 
 	bool operator ==(const country& con) const
 	{
-		return population == con.population;
+		return name == con.name || area == con.area || 
+		population == con.population || capital == con.capital;
 	}
 
 	string to_string() const

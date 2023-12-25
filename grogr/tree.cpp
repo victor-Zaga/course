@@ -5,6 +5,7 @@ class Customer
 protected:
 	string login;
 	string password;
+	int role = -1;
 
 public:
 	Customer(const string& _login, const string& _password) : login(_login), password(_password) {}
@@ -15,6 +16,7 @@ public:
 	}
 	~Customer() {}
 
+	// геттеры
 	string get_login() const
 	{
 		return login;
@@ -23,6 +25,18 @@ public:
 	{
 		return password;
 	}
+	virtual int get_role() const { return this->role; }
+
+	// сеттеры
+	void set_login(const string& login)
+	{
+		this->login = login;
+	}
+	void set_password(const string& password)
+	{
+		this->password = password;
+	}
+	virtual void set_role(const int& _role) {}
 
 	bool operator <(const Customer& customer) const
 	{
@@ -42,17 +56,19 @@ public:
 	/*virtual string to_string() { return ""; }*/
 
 	virtual void show() {}
-
-	virtual int get_role() const { return -1; }
 };
 
 class User : public Customer
 {
-private:
-	const int is_admin = 0;
+//private:
+//	const int is_admin = 0;
 
 public:
-	User(const string& _login, const string& _password) : Customer(_login, _password) 	{ }
+	//User(const string& _login, const string& _password) : Customer(_login, _password) {}
+	User(const string& _login, const string& _password, const int& _role) : Customer(_login, _password) 
+	{
+		this->role = _role;
+	}
 	User() : Customer() {}
 	~User() {}
 
@@ -79,18 +95,31 @@ public:
 		cout << "-----------------------------------------------------\n";
 	}
 
+	//int get_role() const override
+	//{
+	//	//return is_admin;
+	//	return 0;
+	//}
 	int get_role() const override
 	{
-		return is_admin;
+		return this->role;
+	}
+
+	void set_role(const int& _role) override
+	{
+		this->role = _role;
 	}
 };
 
 class Admin : public Customer
 {
-private:
-	const int is_admin = 1;
+//private:
+//	const int is_admin = 1;
 public:
-	Admin(const string& _login, const string& _password) : Customer(_login, _password) {}
+	Admin(const string& _login, const string& _password, const int& _role) : Customer(_login, _password) 
+	{
+		this->role = _role;
+	}
 	Admin() : Customer() {}
 	~Admin() {}
 
@@ -111,15 +140,26 @@ public:
 	{
 		string role = "Admin";
 		cout << "| "
-			<< std::setw(11) << std::left << this->get_login() << "| "
-			<< std::setw(16) << std::left << this->get_password() << "| "	
-			<< std::setw(15) << std::left << role << "|  \n";
+			 << std::setw(11) << std::left << this->get_login() << "| "
+			 << std::setw(16) << std::left << this->get_password() << "| "	
+			 << std::setw(15) << std::left << role << "|  \n";
 		cout << "-----------------------------------------------------\n";
 	}
 
+	//int get_role() const override
+	//{
+	//	//return is_admin;
+	//	return 1;
+	//}
+
 	int get_role() const override
 	{
-		return is_admin;
+		return this->role;
+	}
+
+	void set_role(const int& _role) override
+	{
+		this->role = _role;
 	}
 };
 
@@ -315,7 +355,7 @@ public:
 	{
 		while (true)
 		{
-			if ((std::cin >> value) && value >= 0)
+			if ((std::cin >> value) && value > 0)
 			{
 				break;
 			}
@@ -363,7 +403,7 @@ public:
 		return value;
 	}
 
-	//Работа с пользователями
+	// Работа с пользователями
 	Customer* check_customer_to_login_in(Customer* guest)
 	{
 		Customer* check = check_customers_rec(root, *(guest));
@@ -376,7 +416,7 @@ public:
 	}
 
 	// паблик метод для перебалансировки индексов в порядке pre-order (с левого поддерева вверх и потом правое поддерево)
-	void rebalanceIndexesPreOrder() { 
+	void rebalanceIndexesPreOrder() {
 		int current_index = 0;
 		rebalanceRecPreOrder(root, current_index);
 	}
@@ -408,23 +448,220 @@ public:
 		root = nullptr;
 	}
 
-	// проверка на одинковые логины в дереве
-	bool is_same_logins(const string& login) const
+	//// проверка на одинковые логины в дереве
+	//bool is_same_logins(const string& login) const
+	//{
+	//	return is_same_logins_rec(root, login);
+	//}
+
+	// вспомогательный метод для проверки на одинаковые элементы в деревьях 
+	template <typename T> bool is_same(const T& value)
 	{
-		return is_same_logins_rec(root, login);
+		return is_same_obj(root, value);
 	}
 
-
-	/*template <typename T>
-	bool BinaryTree<T>::contains(const T& value) const
+	// метод для редактирования страны по заданному индексу
+	void changing_country_info()
 	{
-		return containsHelper(root, value);
-	}*/
+		if (root == nullptr) {
+			return;
+		}
+
+		cout << "\nВведите номер страны для редактирования: ";
+		int ind_to_chage = 0;
+		ind_to_chage = input_int(ind_to_chage);
+
+		Node* country_to_change = get_element_by_index(root, ind_to_chage);
+
+		country* temp_country = new country(country_to_change->data->get_name(), country_to_change->data->get_continent(), 
+		country_to_change->data->get_area(), country_to_change->data->get_population(), country_to_change->data->get_capital());
+
+		root = delele_element(root, country_to_change);
+		rebalanceIndexesPreOrder();
+
+		int choice_to_change = 0;
+		do
+		{
+			// вывод меню для редактирования стран
+			cout << "\n1. Редактировать название страны\n"
+				 << "2. Редактировать континент\n"
+				 << "3. Редактировать площадь территории страны\n"
+				 << "4. Редактировать численность населения страны\n"
+				 << "5. Редактировать столицу страны\n"
+				 << "0. Закончить редактирование\n";
+
+			cout << "Выберите действие: ";
+			choice_to_change = input_int(choice_to_change);
+
+			string new_name, new_continent, new_capital;
+			double new_area = 0; 
+			double new_population = 0;
+
+			switch (choice_to_change)
+			{
+			case 1:
+				cin.ignore();
+				cout << "\nВведите новое название для страны: ";
+				getline(cin, new_name);
+				temp_country->set_name(new_name);
+				cout << "Название страны отредактировано." << endl;
+				break;
+
+			case 2:
+				cin.ignore();
+				cout << "\nВведите новый континент для страны: ";
+				getline(cin, new_continent);
+				temp_country->set_continent(new_continent);
+				cout << "Континент страны отредактирован." << endl;
+				break;
+
+			case 3:
+				cin.ignore();
+				cout << "\nВведите новую площадь территории страны: ";
+				new_area = input_area_population(new_area);
+				temp_country->set_area(new_area);
+				cout << "Площадь территории страны отредактирована." << endl;
+				break;
+
+			case 4:
+				cin.ignore();
+				cout << "\nВведите новую численность населения: ";
+				new_population = input_area_population(new_population);
+				temp_country->set_population(new_population);
+				cout << "Численность населения страны отредактирована." << endl;
+				break;
+
+			case 5:
+				cin.ignore();
+				cout << "\nВведите новую столицу страны: ";
+				getline(cin, new_capital);
+				temp_country->set_capital(new_capital);
+				cout << "Столица страны отредактирована." << endl;
+				break;
+
+			case 0:
+				cout << "\nРедактирование завершено." << endl;
+				break;
+
+			default:
+				cout << "\nНет такого пунта для редактирования." << endl;
+				break;
+			}
+		} while (choice_to_change != 0);
+
+		insert_with_ptr(temp_country);
+		rebalanceIndexesPreOrder();
+		country_to_change = nullptr;
+		delete country_to_change;
+	}
+
+	// метод для редактирования пользователя по заданному индексу 
+	void changing_customer_info()
+	{
+		cout << "\nВведите номер пользователя для редактирования: ";
+		int ind_to_chage = 0;
+		ind_to_chage = input_int(ind_to_chage);
+
+		Node* customer_to_change = get_element_by_index(root, ind_to_chage);
+
+		Customer* temp_customer = nullptr;
+		if (customer_to_change->data->get_role() == 0)
+		{
+			temp_customer = new User(customer_to_change->data->get_login(),
+				customer_to_change->data->get_password(), customer_to_change->data->get_role());
+		}
+		else if (customer_to_change->data->get_role() == 1)
+		{
+			temp_customer = new Admin(customer_to_change->data->get_login(),
+				customer_to_change->data->get_password(), customer_to_change->data->get_role());
+		}
+
+		root = delele_element(root, customer_to_change);
+		rebalanceIndexesPreOrder();
+
+		int choice_to_change = 0;
+		do
+		{
+			// вывод меню для редактирования пользователей
+			cout << "\n1. Редактировать логин\n"
+				 << "2. Редактировать пароль\n"
+				 << "3. Редактировать роль\n"
+				 << "0. Закончить редактирование\n";
+
+			cout << "Выберите действие: ";
+			choice_to_change = input_int(choice_to_change);
+
+			string new_login, new_password;
+			int new_role = 0;
+
+			switch (choice_to_change)
+			{
+			case 1:
+				cin.ignore();
+				cout << "\nВведите новый логин пользователя: ";
+				getline(cin, new_login);
+				temp_customer->set_login(new_login);
+				cout << "Логин отредактирован." << endl;
+				break;
+
+			case 2:
+				cin.ignore();
+				cout << "\nВведите новый пароль пользователя: ";
+				getline(cin, new_password);
+				temp_customer->set_password(new_password);
+				cout << "Пароль отредактирован." << endl;
+				break;
+
+			case 3:
+				cin.ignore();
+				cout << "\nВведите новую роль для пользователя (0 - user, 1 - admin): ";
+				new_role = input_int(new_role);
+
+				// проверки на роль, которая уже стоит изначально
+				if (new_role == temp_customer->get_role() && new_role == 0)
+				{
+					cout << "\nЭтот пользователь и не имел прав администратора." << endl;
+					break;
+				}
+				else if (new_role == temp_customer->get_role() && new_role == 1)
+				{
+					cout << "\nЭтот пользователь уже имеет права администратора." << endl;
+					break;
+				}
+
+				// изменение роли пользователя
+				if (new_role == 0)
+				{
+					temp_customer = new User(temp_customer->get_login(), temp_customer->get_password(), new_role);
+					cout << "Роль отредактирована. Пользователь больше не имеет прав администратора!" << endl;
+				}
+				else if (new_role == 1)
+				{
+					temp_customer = new Admin(temp_customer->get_login(), temp_customer->get_password(), new_role);
+					cout << "Роль отредактирована. Пользователь имеет права администратора!" << endl;
+				}
+				break;
+
+			case 0:
+				cout << "\nРедактирование завершено." << endl;
+				break;
+
+			default:
+				cout << "\nНет такого пунта для редактирования." << endl;
+				break;
+			}
+		} while (choice_to_change != 0);
+
+		insert_with_ptr(temp_customer);
+		rebalanceIndexesPreOrder();
+		customer_to_change = nullptr;
+		delete customer_to_change;
+	}
 
 
 private:
 
-	//провкерка по индексу для удаления
+	// Вспомогательный метод для рекурсивного поиска узла по индексу - возвращает ноду, если есть нода с переданным индексом, иначе nullptr
 	Node* get_element_by_index(Node* root, const int target_index)
 	{
 		if (root == nullptr)
@@ -497,7 +734,7 @@ private:
 	//	}
 	//}
 
-	// вставка элемента дерева через указатель
+	// рекурсивная вставка элемента дерева через указатель
 	void insertRecursivePtr(Node* root, const T& value, int index)  //const Customer*& value, Customer*
 	{
 		if (*(value) < *(root->data))  //Customer	
@@ -522,7 +759,7 @@ private:
 		}
 	}
 
-	////печать дерева как удобно смотреть 
+	//печать дерева как удобно смотреть 
 	//void printInOrderRec(Node* root)
 	//{
 	//	if (root != nullptr)
@@ -588,7 +825,7 @@ private:
 		return root;
 	}
 
-	// удаление элменета дерева по заданному населению страны
+	// рекурсивное удаление переданного элемента дерева (по заданному индексу)
 	Node* delele_element(Node* root, Node* key_object)
 	{
 		if (root == NULL) {
@@ -659,7 +896,15 @@ private:
 		getline(cin, your_capital);
 
 		country* temp_county = new country(your_name, your_continent, your_area, your_population, your_capital);
-		insert_with_ptr(temp_county);
+
+		if (is_same(temp_county))
+		{
+			cout << "\nТакая страна уже существует." << endl;
+		}
+		else
+		{
+			insert_with_ptr(temp_county);
+		}
 
 		temp_county = nullptr;
 		delete temp_county;
@@ -671,35 +916,41 @@ private:
 		cout << "\nДобавить пользователя (1) или администратора (2): ";
 		int choice = 0;
 		choice = input_int(choice);
+		string your_login, your_pass;
 		Customer* new_customer = nullptr;
 		if (choice == 1)
 		{
 			cin.ignore();
 			cout << "\nВведите логин пользователя: " << endl;
-			string your_login;
 			getline(cin, your_login);
 
 			cout << "Введите пароль пользователя: " << endl;
-			string your_pass;
 			getline(cin, your_pass);
 
-			new_customer = new User(your_login, your_pass);
+			new_customer = new User(your_login, your_pass, 0);
 		}
 		else if (choice == 2)
 		{
 			cin.ignore();
 			cout << "\nВведите логин администратора: " << endl;
-			string your_login;
 			getline(cin, your_login);
 
 			cout << "Введите пароль администратора: " << endl;
-			string your_pass;
 			getline(cin, your_pass);
 
-			new_customer = new Admin(your_login, your_pass);
+			new_customer = new Admin(your_login, your_pass, 1);
 		}
 
-		insert_with_ptr(new_customer);
+		if (is_same(new_customer))
+		{
+			cout << "\nПользователь с логином " << your_login << " уже существует." << endl;
+		}
+		else
+		{
+			insert_with_ptr(new_customer);
+		}
+		new_customer = nullptr;
+		delete new_customer;
 	}
 
 	// ПЕРЕБАЛАНСИРОВКА ДЕРЕВА ПО НАЗВАНИЮ СТРАНЫ 
@@ -860,25 +1111,20 @@ private:
 		}
 	}
 
-	bool is_same_logins_rec(Node* root, const string& login) const
+	// метод для проверки на одинаковые элементы в деревьях
+	template <typename T> bool is_same_obj(Node* root, const T& value)
 	{
 		if (root == nullptr)
 		{
 			return false; // элемент не найден
 		}
 
-		if (root->data->get_login() == login)
-		{
-			return true; // элемент найден в текущем узле
-		}
-		else if (login < root->data->get_login())
-		{
-			return is_same_logins_rec(root->left, login);
-		}
-		else
-		{
-			return is_same_logins_rec(root->right, login);
-		}
-	}
 
+		bool current_node = (*(root->data) == *value);  // элемент найден в текущем узле
+
+		bool left_tree = is_same_obj(root->left, value);
+		bool right_tree = is_same_obj(root->right, value);
+
+		return current_node || left_tree || right_tree;
+	}
 };

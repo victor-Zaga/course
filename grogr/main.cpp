@@ -1,7 +1,6 @@
 #include "country.cpp"
 #include "tree.cpp"
 #include <fstream>
-#include <type_traits>
 
 int input_int(int& value)
 {
@@ -12,7 +11,7 @@ int input_int(int& value)
 			break;
 		}
 		else {
-			std::cout << "Ошибка! Некорректный ввод.\n";
+			std::cout << "Ошибка! Некорректный ввод. Попробуйте снова: \n";
 			std::cin.clear();
 			std::cin.ignore(INT_MAX, '\n');
 			std::cout << std::endl;
@@ -235,18 +234,16 @@ public:
 	{
 		customer_tree = _customer_tree;
 	}
-	~Admin_interface() { }
+	~Admin_interface() {}
 
 	void add_country()
 	{	
-		country_tree.add_country_();
-		country_tree.rebalanceIndexesPreOrder(); // перестановка индексов после добавдений
+		country_tree.add_country();
 	}
 
-	void add_customer()
+	void add_user()
 	{
-		customer_tree.add_customer_();
-		customer_tree.rebalanceIndexesPreOrder();
+		customer_tree.add_user();
 	}
 
 	void admin_screen()
@@ -265,6 +262,7 @@ public:
 		bool check_chenges = false;
 		bool is_save = false;
 		bool is_becup = false;
+		int guest_index = 0;
 		while (true)
 		{
 			show_menu(); // 1 2 3 
@@ -286,45 +284,48 @@ public:
 				country_tree_to_view = database.read_countries_from_file();
 				country_tree_to_view.printTreePopulationUp();
 				break;
+
 			case 2:
 				country_tree_to_view = database.read_countries_from_file();
 				country_tree_to_view.out_continent_countries_alfavit(country_tree_to_view);
 				break;
+
 			case 3:
 				/*country_tree = database.read_countries_from_file();
 				search_for_interval();*/
 				country_tree_to_view = database.read_countries_from_file();
 				country_tree_to_view.search();
 				break;
+
 			case 4:
 				add_country();
 				is_becup = false;
 				break;
+
 			case 5:
-				add_customer();
+				add_user();
 				is_becup = false;
 				break;
 
 			case 6:
 				customer_tree_to_view = database.read_customers_from_file();
 				customer_tree_to_view.print_customers();
-				//customer_tree.print_customers();
 				break;
 
 			case 7:
-				country_tree.remove();
+				country_tree.remove_country();
 				break;
 
 			case 8:
-				customer_tree.remove();
+				customer_tree.remove_user();
 				break;
 
-			case 9:
+			case 9:			
 				country_tree.changing_country_info();
 				break;
 
 			case 10:
-				customer_tree.changing_customer_info();
+				customer_tree.changing_user_info();
 				break;
 
 			case 11:
@@ -346,7 +347,7 @@ public:
 
 			case 12:
 				// отмена изменений
-				if (is_save && !is_becup)  // после 10 пункта будет Изменения были отменены
+				if (is_save && !is_becup)
 				{ // на 2 раза подряд
 					country_tree = original_country_tree;
 					customer_tree = original_customer_tree;
@@ -468,7 +469,7 @@ public:
 				while(customer_tree.is_same(guest))
 				{
 					cout << "\nПользователь с логином " << login << " уже существует" << endl;
-					cout << "Придумайте другой логин: " << endl;
+					cout << "Придумайте другой логин: ";
 					getline(cin, login);
 					guest->set_login(login);
 				}

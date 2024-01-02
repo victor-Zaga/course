@@ -128,11 +128,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="country.cpp" />
-    <ClCompile Include="service.cpp" />
-    <ClCompile Include="tree.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="user.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="admin.h" />
+    <ClInclude Include="country.h" />
+    <ClInclude Include="customer.h" />
+    <ClInclude Include="file_database.h" />
+    <ClInclude Include="service.h" />
+    <ClInclude Include="tree.h" />
+    <ClInclude Include="user.h" />
+    <ClInclude Include="user_interface.h" />
+    <ClInclude Include="admin_interface.h" />
+    <ClInclude Include="main_menu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

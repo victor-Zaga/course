@@ -1,5 +1,5 @@
 Russia;Eurasia;17.10;146.10;Moscow;
 Japan;Asia;0.38;126.00;Tokyo;
-India;Asia;3.30;1500.00;New Delhi;
-Brazil;South America;8.50;211.00;Brazil;
+Brazil;South America;8.51;213.00;Brazil;
 China;Asia;9.60;1410.00;Beijing;
+India;Asia;3.30;1500.00;New Delhi;

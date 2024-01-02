@@ -1,9 +1,8 @@
 #pragma once
-#include <iostream>
 #include <string>
 #include <iomanip>
 #include <sstream>
-#define MAX_LENTH 100
+#include <iostream>
 using namespace std;
 
 class country
@@ -15,7 +14,7 @@ private:
 	double population;
 	string capital;
 public:
-	country(string _name, string _continent, double _area, double _population, string _capital)	
+	country(string _name, string _continent, double _area, double _population, string _capital)
 	{
 		name = _name;
 		continent = _continent;
@@ -50,11 +49,11 @@ public:
 	void show()
 	{
 		cout << "| "
-		<< std::setw(11) << std::left << this->get_name() << "| "
-		<< std::setw(16) << std::left << this->get_continent() << "| "
-		<< std::setw(19) << std::left << this->get_area() << "| "
-		<< std::setw(19) << std::left << this->get_population() << "| "
-		<< std::setw(11) << std::left << this->get_capital() << "|  \n";
+			<< std::setw(11) << std::left << this->get_name() << "| "
+			<< std::setw(16) << std::left << this->get_continent() << "| "
+			<< std::setw(19) << std::left << this->get_area() << "| "
+			<< std::setw(19) << std::left << this->get_population() << "| "
+			<< std::setw(11) << std::left << this->get_capital() << "|  \n";
 		cout << "-------------------------------------------------------------------------------------------\n";
 	}
 
@@ -70,8 +69,8 @@ public:
 
 	bool operator ==(const country& con) const
 	{
-		return name == con.name || area == con.area || 
-		population == con.population || capital == con.capital;
+		return name == con.name || area == con.area ||
+			population == con.population || capital == con.capital;
 	}
 
 	string to_string() const
@@ -88,7 +87,7 @@ public:
 
 		// формирование строки
 		string curr_country = this->get_name() + separator + this->get_continent() + separator + area_str +
-							  separator + population_str + separator + this->get_capital() + separator + "\n";
+			separator + population_str + separator + this->get_capital() + separator + "\n";
 
 		return curr_country;
 	}

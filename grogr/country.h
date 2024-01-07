@@ -30,7 +30,6 @@ public:
 		population = 0;
 		capital = "";
 	}
-	~country() {}
 
 	//геттеры
 	string get_name() const { return name; }

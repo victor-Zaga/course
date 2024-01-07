@@ -26,10 +26,10 @@ private:
 public:
 	BinaryTree() : root(nullptr) {}
 
-	//  онструктор копировани€
-	BinaryTree(const BinaryTree& tree_to_copy) : root(nullptr) {
-		root = copy_Node(tree_to_copy.root);
-	}
+	////  онструктор копировани€
+	//BinaryTree(const BinaryTree& tree_to_copy) : root(nullptr) {
+	//	root = copy_Node(tree_to_copy.root);
+	//}
 
 	// ќператор присваивани€
 	BinaryTree& operator =(const BinaryTree& tree_to_save) {
@@ -355,7 +355,7 @@ public:
 				if (is_same(temp_country))
 				{
 					cout << "\n—трана с таким названием уже существует." << endl;
-					temp_country->set_name(save_name);
+					temp_country->set_name(save_name); // возвращаем изначальное значение названи€ страны
 				}
 				else
 				{
@@ -767,9 +767,9 @@ private:
 		{
 			Node* temp = new Node[count + 1]; //массив из нод
 			for (int i = 0; i < count; ++i) {
-				temp[i] = search_arr[i];
+				temp[i] = search_arr[i]; // копируем предыдущие найденные
 			}
-			temp[count] = *root; //Node     *Node
+			temp[count] = *root; //Node  *Node  // вставл€ем текущий найденный элемент
 
 			search_arr = temp; // оба массива имеют одинаковые адреса в пам€ти, при очистке temp очиститс€ search_arr
 			temp = nullptr;

@@ -7,7 +7,6 @@ class MENU
 {
 public:
 	MENU() {}
-	~MENU() {}
 	void main_menu()
 	{
 		BinaryTree<country*> country_tree; // создание дерева стран
@@ -20,6 +19,7 @@ public:
 		string password;
 		Customer* guest = nullptr;
 		bool is_come = false;
+
 		do
 		{
 			cout << "\n1. Войти" << endl;
@@ -62,6 +62,8 @@ public:
 					Admin_interface ai(country_tree, customer_tree, database);
 					ai.admin_screen();
 				}
+				country_tree.clear_tree();
+				customer_tree.clear_tree();
 			}
 			else if (choice == 2)
 			{
@@ -89,6 +91,7 @@ public:
 				database.write_tree_to_file(customer_tree);
 
 				cout << "Вы успешно зарегистрированы!" << endl;
+				customer_tree.clear_tree();
 			}
 			else
 			{
@@ -98,7 +101,5 @@ public:
 
 		guest = nullptr;
 		delete guest;
-		country_tree.clear_tree();
-		customer_tree.clear_tree();
 	}
 };

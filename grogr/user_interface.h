@@ -9,7 +9,6 @@ protected:
 	file_database database;
 public:
 	User_interface(BinaryTree<country*> _country_tree, file_database _database) : country_tree(_country_tree), database(_database) {}
-	~User_interface() {}
 	void Print_tree_population()
 	{
 		country_tree.printTreePopulationUp();
@@ -25,7 +24,7 @@ public:
 
 	void show_menu() const
 	{
-		cout << "\n1. Вывод информации о странах, отсортированную по численности населения." << endl;
+		cout << "\n1. Вывод информации о странах, отсортированной по численности населения." << endl;
 		cout << "2. Вывод стран для заданного континента в алфавитном порядке." << endl;
 		cout << "3. Поиск информации по площади в заданном диапазоне. " << endl;
 	}

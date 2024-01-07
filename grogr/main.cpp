@@ -10,6 +10,14 @@ int main()
 {
 	system("chcp 1251");
 	MENU ui;
-	ui.main_menu();
+	try
+	{
+		ui.main_menu();
+	}
+	catch (const std::exception& ex)
+	{
+		std::cerr << endl << ex.what() << endl;
+		return -1;
+	}
 	return 0;
 }

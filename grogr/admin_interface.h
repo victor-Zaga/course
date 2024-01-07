@@ -12,7 +12,7 @@ public:
 	{
 		customer_tree = _customer_tree;
 	}
-	~Admin_interface() {}
+	~Admin_interface() { customer_tree.clear_tree(); } // тк customer_tree - коопия дерева
 
 	void admin_screen()
 	{
@@ -42,8 +42,8 @@ public:
 			cout << "8. Удаление заданного пользователя." << endl;
 			cout << "9. Редактирование заданной страны." << endl;
 			cout << "10. Редактирование заданного пользователя." << endl;
-			cout << "11. Сохранение изменений в файл" << endl;
-			cout << "12. Отмена изменений" << endl;
+			cout << "11. Сохранение изменений в файл." << endl;
+			cout << "12. Отмена изменений." << endl;
 			cout << "0. Выход." << endl;
 			cout << "Сделайте выбор: ";
 			choice = input_int(choice);

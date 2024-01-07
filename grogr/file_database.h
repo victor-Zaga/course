@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <stdexcept> // для std::ios_base::failure и ошибок, связанных с открытием файла
 #include "tree.h"
 #include "../sha256-master/sha256.h"
 #include "../sha256-master/sha256.c"
@@ -15,94 +16,87 @@ private:
 
 public:
 	file_database(const string& _customers_file, const string& _countries_file) : customers_file(_customers_file), countries_file(_countries_file) {}
-	~file_database() {}
 
 	// метод для чтения пользователей из файла в дерево пользователей
 	BinaryTree<Customer*> read_customers_from_file()
 	{
-		BinaryTree<Customer*> temp_tree;
 		ifstream file(customers_file);  // создание объекта для чтен0ия из файла
 
-		if (file.is_open())
+		if (!file.is_open()) // попытка открытия файла
 		{
-			string line;
+			throw std::ios_base::failure("Ошибка при открытии файла: " + customers_file);
+		}
 
-			while (getline(file, line))
+		BinaryTree<Customer*> temp_tree;
+		string line;
+		while (getline(file, line))
+		{
+			stringstream ss(line);
+			string login, password;
+			int role = 0;
+
+			getline(ss, login, ';');
+			getline(ss, password, ';');
+			ss >> role;
+
+			if (role == 0)
 			{
-				stringstream ss(line);
-				string login, password;
-				int role = 0;
-
-				getline(ss, login, ';');
-				getline(ss, password, ';');
-				ss >> role;
-
-				if (role == 0)
-				{
-					User* temp_user = new User(login, password);
-					temp_tree.insert_with_ptr(temp_user);
-					temp_user = nullptr; // для корректной работв дерева
-					delete temp_user;
-				}
-				else if (role == 1)
-				{
-					Admin* temp_admin = new Admin(login, password);
-					temp_tree.insert_with_ptr(temp_admin);
-					temp_admin = nullptr;
-					delete temp_admin;
-				}
+				User* temp_user = new User(login, password);
+				temp_tree.insert_with_ptr(temp_user);
+				temp_user = nullptr; // для корректной работв дерева
+				delete temp_user;
 			}
+			else if (role == 1)
+			{
+				Admin* temp_admin = new Admin(login, password);
+				temp_tree.insert_with_ptr(temp_admin);
+				temp_admin = nullptr;
+				delete temp_admin;
+			}
+		}
 
-			file.close();
-			temp_tree.rebalanceIndexesPreOrder();
-		}
-		else
-		{
-			cout << "Ошибка при открытия файла." << customers_file << endl;
-		}
+		file.close();
+		temp_tree.rebalanceIndexesPreOrder();
+
 		return temp_tree;
 	}
 
 	BinaryTree<country*> read_countries_from_file()
 	{
-		BinaryTree<country*> temp_tree;
 		ifstream file(countries_file);  // создание объекта для чтен0ия из файла
 
-		if (file.is_open())
+		if (!file.is_open())
 		{
-			string line;
-
-			while (getline(file, line))
-			{
-				stringstream ss(line);
-				string name, continent, capital;
-				double area = 0;
-				double population = 0;
-
-				getline(ss, name, ';');
-				getline(ss, continent, ';');
-
-				ss >> area;
-				ss.ignore();
-				ss >> population;
-				ss.ignore();
-				getline(ss, capital, ';');
-
-				country* temp_country = new country(name, continent, area, population, capital);
-				temp_tree.insert_with_ptr(temp_country);
-				temp_country = nullptr;
-				delete temp_country;
-			}
-
-			file.close();
-			temp_tree.rebalanceIndexesPreOrder(); // ставим индексы в порядке pre-order
+			throw std::ios_base::failure("Ошибка при открытии файла: " + countries_file);
 		}
-		else
+
+		BinaryTree<country*> temp_tree;
+		string line;
+		while (getline(file, line))
 		{
-			cout << "Ошибка при открытия файла." << countries_file << endl;
-			temp_tree = BinaryTree<country*>();
-			return temp_tree; // сделать try catch
+			stringstream ss(line);
+			string name, continent, capital;
+			double area = 0;
+			double population = 0;
+
+			getline(ss, name, ';');
+			getline(ss, continent, ';');
+
+			ss >> area;
+			ss.ignore();
+			ss >> population;
+			ss.ignore();
+			getline(ss, capital, ';');
+
+			country* temp_country = new country(name, continent, area, population, capital);
+			temp_tree.insert_with_ptr(temp_country);
+			temp_country = nullptr;
+			delete temp_country;
 		}
+
+		file.close();
+		temp_tree.rebalanceIndexesPreOrder(); // ставим индексы в порядке pre-order
+
 		return temp_tree;
 	}
 
@@ -124,17 +118,14 @@ public:
 
 		ofstream file(file_name); // создание объекта для записи в файл
 
-		if (file.is_open())
+		if (!file.is_open())
 		{
-			tree.write_data_to_file_(file);
-			file.close();
+			throw std::ios_base::failure("Ошибка при открытии файла " + file_name);
 		}
-		else
-		{
-			cout << "Ошибка при открытия файла." << customers_file << endl;
-		}
-	}
 
+		tree.write_data_to_file_(file);
+		file.close();
+	}
 };
 
 ofstream& operator <<(ofstream& country_file, const country& obj)

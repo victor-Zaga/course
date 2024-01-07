@@ -16,7 +16,6 @@ public:
 		login = "";
 		password = "";
 	}
-	~Customer() {}
 
 	// геттеры
 	string get_login() const
@@ -37,7 +36,7 @@ public:
 	{
 		this->password = password;
 	}
-	virtual void set_role(const int& _role) {}
+	//virtual void set_role(const int& _role) {}
 
 	bool operator <(const Customer& customer) const
 	{

@@ -12,7 +12,6 @@ public:
 		this->role = _role;
 	}
 	Admin() : Customer() {}
-	~Admin() {}
 
 	void show() override
 	{
